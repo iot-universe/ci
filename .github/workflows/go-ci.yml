@@ -16,6 +16,9 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Check out code
         uses: actions/checkout@v3
+
+      - name: Git config setup to use ssh instead of http
+        run: git config --global url."git@github.com:".insteadOf https://github.com/
       
       - name: Setting private repos for golang
         run: export GOPRIVATE=github.com/iot-universe

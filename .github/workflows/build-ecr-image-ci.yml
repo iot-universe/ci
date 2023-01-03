@@ -49,6 +49,12 @@ jobs:
       shell: bash
       run: cp ~/.ssh/id_rsa .
 
+    - name: print tags
+      shell: bash
+      run: |
+        echo PR tag: $((pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}))
+        echo tag: $((${{github.run_number}}))
+
     - name: Build, tag and push pr image to ecr
       if: github.ref != 'refs/heads/main' && steps.findPr.outputs.number
       uses: appleboy/docker-ecr-action@master

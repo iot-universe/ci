@@ -43,7 +43,12 @@ jobs:
       
       # - name: run go sec
       #   run: GO111MODULE=on gosec ./...
-      - name: run go sec
-        uses: ynniss/golang-security-action@master
-        with: 
-          CODE_PATH: "./..."
+      # - name: run go sec
+      #   uses: ynniss/golang-security-action@master
+      #   with: 
+      #     CODE_PATH: "./..."
+      
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...

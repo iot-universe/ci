@@ -47,9 +47,9 @@ jobs:
       #   uses: ynniss/golang-security-action@master
       #   with: 
       #     CODE_PATH: "./..."
-      - name: Build
-        run: go build -v ./...
-        
+      - name: install dependencies
+        run: go get -d
+
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:

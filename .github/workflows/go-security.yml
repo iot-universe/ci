@@ -38,19 +38,23 @@ jobs:
         with:
           go-version: ${{inputs.go-version}}
 
-      # - name: Install go sec
-      #   uses: go install github.com/securego/gosec/v2/cmd/gosec@master
+      - name: Install go sec
+        uses: go install github.com/securego/gosec/v2/cmd/gosec@master
       
-      # - name: run go sec
-      #   run: GO111MODULE=on gosec ./...
+      - name: run go sec
+        run: GO111MODULE=on gosec ./...
+
+
       # - name: run go sec
       #   uses: ynniss/golang-security-action@master
       #   with: 
       #     CODE_PATH: "./..."
-      - name: install dependencies
-        run: go get -d
 
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./...
+
+      # - name: Build
+      #   run: go build -v ./...
+        
+      # - name: Run Gosec Security Scanner
+      #   uses: securego/gosec@master
+      #   with:
+      #     args: ./...

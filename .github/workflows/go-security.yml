@@ -39,7 +39,7 @@ jobs:
           go-version: ${{inputs.go-version}}
 
       - name: Install go sec
-        uses: securego/gosec@master
+        uses: go install github.com/securego/gosec/v2/cmd/gosec@master
       
       - name: run go sec
         run: GO111MODULE=on gosec ./...

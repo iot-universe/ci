@@ -38,11 +38,11 @@ jobs:
         with:
           go-version: ${{inputs.go-version}}
 
-      - name: Install go sec
-        uses: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      # - name: Install go sec
+      #   uses: go install github.com/securego/gosec/v2/cmd/gosec@latest
       
-      - name: run go sec
-        run: GO111MODULE=on gosec ./...
+      # - name: run go sec
+      #   run: GO111MODULE=on gosec ./...
 
 
       # - name: run go sec
@@ -58,3 +58,8 @@ jobs:
       #   uses: securego/gosec@master
       #   with:
       #     args: ./...
+
+      - name: Run Gosec Security Scanner
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          gosec ./...

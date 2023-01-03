@@ -7,7 +7,7 @@ on:
         required: false
         type: string  
         default: "deploy/docker/Dockerfile" 
-      repository:
+      image:
         required: true
         type: string
         default: ""

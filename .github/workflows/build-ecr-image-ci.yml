@@ -49,14 +49,17 @@ jobs:
       shell: bash
       run: cp ~/.ssh/id_rsa .
 
-    - name: print tag
+    - name: print pr tag
+      if: github.ref != 'refs/heads/main' && steps.findPr.outputs.number
       shell: bash
       run: |
-        if [[${{ github.ref }} != 'refs/heads/main' && ${{ steps.findPr.outputs.number}} ]]; then
           echo tag: $((pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}))
-        else
+
+    - name: print tag
+      if: ${{ github.ref == 'refs/heads/main' }}
+      shell: bash
+      run: |
           echo tag: $((${{github.run_number}}))
-          fi
 
     - name: Build, tag and push pr image to ecr
       if: github.ref != 'refs/heads/main' && steps.findPr.outputs.number

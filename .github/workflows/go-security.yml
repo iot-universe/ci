@@ -10,7 +10,7 @@ on:
 
 jobs: 
   security:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       GO111MODULE: on
     steps:
@@ -38,8 +38,12 @@ jobs:
         with:
           go-version: ${{inputs.go-version}}
 
-      - name: Install go sec
-        uses: go install github.com/securego/gosec/v2/cmd/gosec@master
+      # - name: Install go sec
+      #   uses: go install github.com/securego/gosec/v2/cmd/gosec@master
       
+      # - name: run go sec
+      #   run: GO111MODULE=on gosec ./...
       - name: run go sec
-        run: GO111MODULE=on gosec ./...
+        uses: ynniss/golang-security-action@master
+        with: 
+          CODE_PATH: "./..."

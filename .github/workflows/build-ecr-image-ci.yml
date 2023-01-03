@@ -52,7 +52,7 @@ jobs:
     - name: print tag
       shell: bash
       run: |
-        if [[github.ref != 'refs/heads/main' && steps.findPr.outputs.number]]; then
+        if [[${{ github.ref }} != 'refs/heads/main' && ${{ steps.findPr.outputs.number}} ]]; then
           echo tag: $((pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}))
         else
           echo tag: $((${{github.run_number}}))

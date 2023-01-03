@@ -56,7 +56,7 @@ jobs:
         access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
         secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         registry: ${{steps.login-ecr.outputs.registry}}
-        repo: ${{ inputs.repository }}
+        repo: ${{ inputs.image }}
         region: ${{secrets.AWS_REGION}}
         tags: pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}
         dockerfile: ${{ inputs.dockerfile }}
@@ -69,7 +69,7 @@ jobs:
         access_key: ${{secrets.AWS_ACCESS_KEY_ID}}
         secret_key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         registry: ${{steps.login-ecr.outputs.registry}}
-        repo: ${{ inputs.repository }}
+        repo: ${{ inputs.image }}
         region: ${{secrets.AWS_REGION}}
         tags: ${{github.run_number}}
         dockerfile: ${{ inputs.dockerfile }}

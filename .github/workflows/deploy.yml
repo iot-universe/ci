@@ -1,0 +1,107 @@
+name: Deployer
+
+# Controls when the workflow will run
+on:    
+  workflow_call:
+    # inputs:
+    #   go-version:
+    #     required: true
+    #     type: string
+    #     default: "1.19"
+    
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # run only when pushing to main branch
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup pem file
+        run: |
+          echo "${{ secrets.TF_VAR_PRIVATE_KEY }}" > deploy/terraform/my_key.pem &&
+          chmod 600 deploy/terraform/my_key.pem
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=deploy/terraform init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=deploy/terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: |
+          terraform -chdir=deploy/terraform plan
+        env:
+          TF_VAR_docker_image_tag: ${{github.run_number}}
+          TF_VAR_rds_host: ${{ secrets.TF_VAR_RDS_HOST }}
+          TF_VAR_rds_password: ${{ secrets.TF_VAR_RDS_PASSWORD }}
+          TF_VAR_AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TF_VAR_instance_public_ip: ${{ secrets.TF_VAR_INSTANCE_PUBLIC_IP }}
+          TF_VAR_monitor_url: ${{ secrets.TF_VAR_MONITOR_URL }}
+          TF_VAR_cron_schedule: ${{ secrets.TF_VAR_CRON_SCHEDULE }}
+          TF_VAR_private_key: ${{ secrets.TF_VAR_PRIVATE_KEY }}
+          TF_VAR_PATH_TO_PRIVATE_KEY: my_key.pem
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+      
+      - name: get runner ip address
+        id: ip
+        uses: haythem/public-ip@v1.2
+
+      - name: whitelist runner ip address
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.AWS_INSTANCE_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: eu-west-1
+
+      - name: Terraform Apply
+        run: terraform -chdir=deploy/terraform apply -auto-approve
+        env:
+          TF_VAR_docker_image_tag: ${{github.run_number}}
+          TF_VAR_rds_host: ${{ secrets.TF_VAR_RDS_HOST }}
+          TF_VAR_rds_password: ${{ secrets.TF_VAR_RDS_PASSWORD }}
+          TF_VAR_AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TF_VAR_instance_public_ip: ${{ secrets.TF_VAR_INSTANCE_PUBLIC_IP }}
+          TF_VAR_monitor_url: ${{ secrets.TF_VAR_MONITOR_URL }}
+          TF_VAR_cron_schedule: ${{ secrets.TF_VAR_CRON_SCHEDULE }}
+          TF_VAR_private_key: ${{ secrets.TF_VAR_PRIVATE_KEY }}
+          TF_VAR_PATH_TO_PRIVATE_KEY: my_key.pem
+      
+      - name: revoke runner ip address
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_INSTANCE_SG_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32

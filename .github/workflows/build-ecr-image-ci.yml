@@ -11,6 +11,10 @@ on:
         required: true
         type: string
         default: ""
+      tag-prefix:
+        required: true
+        type: string
+        default: ""
 
   
 jobs: 
@@ -70,7 +74,7 @@ jobs:
         registry: ${{steps.login-ecr.outputs.registry}}
         repo: ${{ inputs.image }}
         region: ${{secrets.AWS_REGION}}
-        tags: pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}
+        tags: ${{inputs.tag-prefix}}-pr-${{steps.findPr.outputs.pr}}-${{github.run_number}}
         dockerfile: ${{ inputs.dockerfile }}
         context: .
 
@@ -83,6 +87,6 @@ jobs:
         registry: ${{steps.login-ecr.outputs.registry}}
         repo: ${{ inputs.image }}
         region: ${{secrets.AWS_REGION}}
-        tags: ${{github.run_number}}
+        tags: ${{inputs.tag-prefix}}-${{github.run_number}}
         dockerfile: ${{ inputs.dockerfile }}
         context: .
